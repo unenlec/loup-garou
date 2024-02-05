@@ -1,12 +1,5 @@
 # RC-WEB AYDRA
 
-    Dans “l’Est sauvage”, le petit hameau de Thiercelieux est depuis peu devenu la proie des Loups-Garous. 
-    Des meurtres sont commis chaque nuit par certains habitants du village, devenus Lycanthropes à cause d’un phénomène mystérieux (peut-être l’effet de serre ?)… 
-    Les Villageois doivent se ressaisir pour éradiquer ce nouveau fléau venu du fond des âges, avant que le hameau ne perde ses derniers habitants.
-    Philippe & Hervé.
-
-![Loup Garou](data/loup_garou.jpeg "Loup Garou")
-
 ## But du jeu
 
     Pour les Villageois : Éliminer les Loups-Garous.
