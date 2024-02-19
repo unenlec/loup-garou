@@ -1,11 +1,23 @@
-export default function Login()
-{
-    return(
-        <div className="flex flex-col gap-3">
-            <h1>Connexion</h1>
-            <input type="text"/>
-            <input type="password"/>
-            <button>Valider</button>
-        </div>
-    )
+import '../login.css'
+
+export default function Login() {
+
+  return (
+    <>
+      <div>
+      <button className='game'>Héberger une partie</button>
+      <br/>
+      <br/>
+      <br/>
+      
+      <button className='game'>Rejoindre une partie</button>
+      </div>
+
+      <div className='topright'>
+        <button className='log'>Se connecter</button>
+        <button className='log'>S'inscrire</button>
+      </div>
+
+    </>
+  )
 }
