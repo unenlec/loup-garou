@@ -1,0 +1,30 @@
+button {
+    display: inline-block;
+    
+    border-width: 3px;
+    box-sizing: border-box;
+    border-style: solid;
+    padding: 10px ;
+
+  }
+
+.game{
+    font-size: 40px ;
+    background-color: rgb(138, 172, 216);
+    line-height: 2 ;
+}
+
+.log {
+    font-size: 20px;
+    background-color: rgb(114, 221, 189);
+    margin-left: 10px; 
+    margin-right: 10px; 
+}
+
+
+.topright {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
