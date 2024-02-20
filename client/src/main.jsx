@@ -4,15 +4,15 @@ import App from './App.jsx'
 import './index.css'
 import {createBrowserRouter,RouterProvider} from  'react-router-dom';
 import ErrorPage from './pages/error-page.jsx';
-import Login from './pages/login.jsx';
+import Accueil from './pages/accueil.jsx';
 import Register from './pages/register.jsx';
 import Game from './pages/game.jsx';
-
+import Login from './pages/login.jsx';
 
 const router = createBrowserRouter([
   {
     path:"/",
-    element: <App/>,
+    element: <Accueil/>,
     errorElement: <ErrorPage/>
   },
   {
