@@ -9,7 +9,7 @@ const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 app.use(cors());
-const io = new Server(server,{
+/*const io = new Server(server,{
     cors:{
         origin:'*'
     }
@@ -25,11 +25,11 @@ io.on('connection', (socket) => {
 
 server.listen(port, () => {
   console.log(`Listening on port ${port}`);
-});
+});*/
 
 
 
-/*
+
 dotenv.config();
 app.use(express.json());
 
@@ -38,4 +38,4 @@ app.use("/api/auth", authRoutes.router);
 app.listen(port, () => {
     connectToMongoDB.connectToMongoDB();
     console.log(`Listening on port ${port}`)
-})*/
+})
