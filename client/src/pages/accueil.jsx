@@ -1,33 +1,21 @@
 import '../accueil.css'
+import {Link} from "react-router-dom"
 
 export default function Accueil() {
-
-  function RedirectionRegister(){
-    document.location.href="./register"
-  }
-
-  function RedirectionGame(){
-    document.location.href="./game"
-  }
-
-  function RedirectionLogin(){
-    document.location.href="./login"
-  }
-
   return (
     <>
       <div>
-      <button className='game' onClick={RedirectionGame}>Héberger une partie</button>
+      <button className='game'><Link to="/game">Héberger une partie</Link></button>
       <br/>
       <br/>
       <br/>
       
-      <button className='game' onClick={RedirectionGame}>Rejoindre une partie</button>
+      <button className='game'><Link to="/game">Rejoindre une partie</Link></button>
       </div>
 
       <div className='topright'>
-        <button className='log' onClick={RedirectionLogin}>Se connecter</button>
-        <button className='log' onClick={RedirectionRegister}>S'inscrire</button>
+        <button className='log'><Link to="/login">Se connecter</Link></button>
+        <button className='log'><Link to="/register">S'inscrire</Link></button>
       </div>
 
     </>
