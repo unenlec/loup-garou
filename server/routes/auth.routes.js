@@ -5,8 +5,16 @@ const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken.js");
 router.post("/login", async (req, res) => {
     try {
-        const { email, password } = res.body;
-        await User.findOne({ email: email }).then((result) => {
+        const { username, password } = req.body;
+        const user = await User.findOne({ username: username });
+        const passOk = await bcrypt.compare(password, user?.password || "");
+        if(!user || !passOk)
+        {
+            return res.status(400).json({error:"Utilisateur ou mot de passe incorrect"})
+        }
+        generateToken(user._id,res);
+        res.status(200).json({
+            message:"Connexion OK",username:user.username,email:user.email
         })
     } catch (error) {
         console.log("ERROR: " + error.message);
@@ -14,7 +22,6 @@ router.post("/login", async (req, res) => {
 })
 
 router.post("/register", async (req, res) => {
-    //res.send("REGISTER");
     try {
         const { username, email, password, confirmPassword } = req.body;
         if (password !== confirmPassword) {
@@ -37,7 +44,7 @@ router.post("/register", async (req, res) => {
         if (newUser) {
             await generateToken(newUser._id, res);
             await newUser.save();
-            res.status(201).json({ success: "OK USER" });
+            res.status(201).json({ success: "OK USER",username:username,email:email });
         } else {
             res.status(400).json({ error: "INVALID USER" });
         }
