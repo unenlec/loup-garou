@@ -1,6 +1,7 @@
 const express = require('express')
 const app = express()
 const port = 4000
+const portSocket = 4001
 const dotenv = require("dotenv");
 const authRoutes = require("./routes/auth.routes.js");
 const connectToMongoDB = require("./database/connectToMongoDB.js");
@@ -9,7 +10,7 @@ const http = require('http');
 const server = http.createServer(app);
 const { Server } = require("socket.io");
 app.use(cors());
-/*const io = new Server(server,{
+const io = new Server(server,{
     cors:{
         origin:'*'
     }
@@ -23,9 +24,9 @@ io.on('connection', (socket) => {
   })
 });
 
-server.listen(port, () => {
-  console.log(`Listening on port ${port}`);
-});*/
+server.listen(portSocket, () => {
+  console.log(`Listening on port ${portSocket}`);
+});
 
 
 
