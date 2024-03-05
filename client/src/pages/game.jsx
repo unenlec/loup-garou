@@ -29,17 +29,22 @@ export default function Game()
                 </div>
 
                 <div className="fixed  bottom-1/4  right-2/3">
-                    Joueur 3
-                    <div className="flexbox bg-blue-400 w-20 h-20"></div>
-                </div>
-
-                <div className="fixed top-2/4 left-2/4">
                     Joueur 4
                     <div className="flexbox bg-blue-400 w-20 h-20"></div>
                 </div>
 
-                <div className="relative  top-2/4 left-3/4">
+                <div className="fixed top-2/4 left-2/4">
                     Joueur 5
+                    <div className="flexbox bg-blue-400 w-20 h-20"></div>
+                </div>
+
+                <div className="fixed  top-2/4">
+                    Joueur 3
+                    <div className="flexbox bg-blue-400 w-20 h-20"></div>
+                </div>
+
+                <div className="fixed  top-1/4 left-2/4">
+                    Joueur 6
                     <div className="flexbox bg-blue-400 w-20 h-20"></div>
                 </div>
 
