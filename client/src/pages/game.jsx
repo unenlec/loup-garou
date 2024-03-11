@@ -24,18 +24,50 @@ export default function Game()
     return(
         <div>
             {localStorage.getItem("authUser") ? (
-                <div className="flex flex-row h-screen w-[100%]">
-                        <div className="flex-[5] bg-red-400">
-                            <h1>GAME</h1>
+                <div className="flex">
+                        <div className="absolute inset-y-0 left-0 bg-red-400 w-3/4">
+                            <div className='absolute right-1/4 w-2/4 h-full'>
+                                <div className='absolute top-0 right-0 w-32 h-32 bg-cyan-400 m-20'>
+                                Joueur x
+                                </div>
+                                <div className='absolute top-0 left-0 w-32 h-32 bg-cyan-400 m-20'>
+                                Joueur x
+                                </div>
+                                <div className='absolute bottom-0 right-0 w-32 h-32 bg-cyan-400 m-20'>
+                                Joueur x
+                                </div>
+                                <div className='absolute bottom-0 left-0 w-32 h-32 bg-cyan-400 m-20'>
+                                Joueur x
+                                </div>
+                            </div>
+
+                            <div className='absolute bottom-1/4 h-2/4 w-full'>
+                                <div className='absolute top-0 right-0 w-32 h-32 bg-cyan-400 m-20'>
+                                Joueur x
+                                </div>
+                                <div className='absolute top-0 left-0 w-32 h-32 bg-cyan-400 m-20'>
+                                Joueur x
+                                </div>
+                                <div className='absolute bottom-0 right-0 w-32 h-32 bg-cyan-400 m-20'>
+                                Joueur x
+                                </div>
+                                <div className='absolute bottom-0 left-0 w-32 h-32 bg-cyan-400 m-20'>
+                                Joueur x
+                                </div>
+                            </div>
+
                         </div>
-                    <div className="bg-lime-700 flex-[2]">
-                        <div className="flex flex-col">
-                        {messageReceived.map((m)=>(
-                                <p key={key++}>{m.username}: {m.message}</p>
-                            ))}
+
+                    <div className="absolute inset-y-0 right-0 bg-lime-700 w-1/4">
+                        <div className='absolute bottom-0 right-0 w-full'>
+                            <div className="flex flex-col">
+                            {messageReceived.map((m)=>(
+                                    <p key={key++}>{m.username}: {m.message}</p>
+                                ))}
+                            </div>
+                            <input className='w-full' onChange={(event)=>setMessage({message:event.target.value,username:JSON.parse(localStorage.getItem("authUser")).username})}placeholder="Message"/>
+                        <button className='w-full' onClick={sendMessage}>Envoyer</button>
                         </div>
-                        <input onChange={(event)=>setMessage({message:event.target.value,username:JSON.parse(localStorage.getItem("authUser")).username})}placeholder="Message"/>
-                    <button onClick={sendMessage}>Envoyer</button>
                     </div>
                 </div>
             ): 
