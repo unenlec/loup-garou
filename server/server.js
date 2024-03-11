@@ -8,6 +8,9 @@ const connectToMongoDB = require("./database/connectToMongoDB.js");
 const cors = require("cors");
 const http = require('http');
 const server = http.createServer(app);
+
+const Message = require("./database/models/message.js");
+
 const { Server } = require("socket.io");
 app.use(cors());
 const io = new Server(server,{
@@ -17,9 +20,13 @@ const io = new Server(server,{
 });
 io.on('connection', (socket) => {
   console.log('a user connected');
-
-  socket.on("message",(data)=>{
-    console.log(data)
+  socket.on("message", async (data)=>{
+    try {   
+      const newMessage = new Message({ username: data.username, textemsg: data.message.message });
+      await newMessage.save();
+    } catch (error) {
+        console.error('Error saving message:', error);
+    }
     socket.broadcast.emit("receive",data)
   })
 });
