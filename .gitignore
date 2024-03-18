@@ -8,13 +8,8 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-<<<<<<< HEAD
-server/node_modules
-server/.env
-=======
 ./server/node_modules
 ./server/.env
->>>>>>> 4e0eddb17f818bab640d255a88f44c5024648c5e
 client/node_modules
 dist
 dist-ssr
