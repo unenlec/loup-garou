@@ -8,8 +8,8 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-server/node_modules
-server/.env
+./server/node_modules
+./server/.env
 client/node_modules
 dist
 dist-ssr
