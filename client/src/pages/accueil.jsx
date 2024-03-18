@@ -8,15 +8,38 @@ import {useContext} from "react"
 export default function Accueil() {
   const { authUser, setAuthUser } = useContext(AuthContext);
   const navigate = useNavigate();
+  const gamecontainer = document.getElementById("games-container")
+
+  const player = {
+    roomId : null,
+    username : "",
+    socketId : "",
+  }
   return (
     <>
       <div>
-      <button className='game'><Link to="/game">Héberger une partie</Link></button>
-      <br/>
-      <br/>
-      <br/>
-      
-      <button className='game'><Link to="/game">Rejoindre une partie</Link></button>
+        <div id='games-container' className='flex-box absolute right-1/4 top-1/4 bg-red-400 w-8/12 h-4/6 rounded-lg'>
+          <p className='flex-box w-40 h-8 m-3 rounded-lg bg-green-600 text-center text-xl'>Liste des parties</p>
+          <button className='absolute bottom-0 right-0 m-3' onClick={()=>{  
+            const li = document.createElement("div");
+            li.className = "bg-green-600 m-8"
+            li.textContent= 'test'
+            const button = document.createElement("button");
+            button.textContent = "join"
+            button.className = "absolute right-0 rounded-lg"
+ 
+            const buttonSupp = document.createElement("button");
+            buttonSupp.textContent = "supprimer"
+            buttonSupp.className = "absolute right-16 rounded-lg"
+
+            li.appendChild(buttonSupp)
+            li.appendChild(button)
+            gamecontainer.append(li)
+            toast.success("Lobby créé")
+
+          }}> Créer une Partie</button>
+        </div>
+
       </div>
       {localStorage.getItem("authUser") ? (
         <div className='topright'>
