@@ -1,3 +1,4 @@
+import '../accueil.css'
 import {Link} from "react-router-dom"
 import {useNavigate} from "react-router-dom"
 import toast from 'react-hot-toast';
@@ -13,6 +14,8 @@ export default function Accueil() {
   const { authUser, setAuthUser } = useContext(AuthContext);
   const [gameList, setGameList] = useState([]);
   const navigate = useNavigate();
+  const gamecontainer = document.getElementById("games-container")
+
   const joinGame =(e)=>{
     console.log(e.target.id);
     socket.emit("joinGame",gameList[Number(e.target.id)].uuid);
@@ -27,7 +30,7 @@ export default function Accueil() {
             'Content-Type': 'application/json'
           }
         });
-  
+
         const reponse = await data.json();
         setGameList(JSON.parse(reponse));
         console.log(gameList[1]);
