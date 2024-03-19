@@ -9,7 +9,7 @@ import Game from './pages/game.jsx';
 import Login from './pages/login.jsx';
 import { Toaster } from 'react-hot-toast';
 import { AuthContextProvider, AuthContext } from './context/AuthContext.jsx';
-
+import { SocketContextProvider } from './context/SocketContext.jsx';
 //const { authUser } = useContext(AuthContext);
 
 const router = createBrowserRouter([
@@ -34,8 +34,10 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <AuthContextProvider>
-      <RouterProvider router={router} />
-      <Toaster />
+      <SocketContextProvider>
+        <RouterProvider router={router} />
+        <Toaster />
+      </SocketContextProvider>
     </AuthContextProvider>
   </React.StrictMode>,
 )

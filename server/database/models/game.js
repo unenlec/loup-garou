@@ -12,7 +12,7 @@ const gameSchema = new mongoose.Schema({
         required: true,
     },
     players: {
-        type: [mongoose.ObjectId]
+        type: [String],
     },
     slot: {
         type: Number,

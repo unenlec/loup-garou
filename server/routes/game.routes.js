@@ -15,4 +15,15 @@ router.get("/getGameList", async (req,res)=>{
         console.log(error);
     }
 })
+
+router.post("/getPlayers", async (req,res)=>{
+    try{
+        const {uuid} = req.body;
+        const game = await Game.findOne({uuid});
+        res.status(200).json(JSON.stringify(game.players));
+    }catch(error)
+    {
+        console.log(error);
+    }
+})
 module.exports = { router };

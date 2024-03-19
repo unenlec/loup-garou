@@ -2,14 +2,13 @@ import {Link} from "react-router-dom"
 import {useNavigate} from "react-router-dom"
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
+import { SocketContext } from "../context/SocketContext";
 import {useContext,useEffect,useState} from "react"
-import io from 'socket.io-client'
-
-const socket = io.connect("localhost:4001")
 
 export default function Accueil() {
+  const socket = useContext(SocketContext);
   const testHost =()=>{
-  socket.emit("hostingame",{user:authUser.username})
+  socket.emit("hostingame",{user:authUser.username});
 }
   const { authUser, setAuthUser } = useContext(AuthContext);
   const [gameList, setGameList] = useState([]);
@@ -44,21 +43,39 @@ export default function Accueil() {
     socket.on("updateGame",()=>{
       getGameList();
   })
+  socket.on("joinStatus",(data)=>{
+    if(data.message=="OK")
+    {
+      localStorage.setItem("currentGame",data.uuid);
+      console.log("CURRENT GAME: ",data)
+      navigate("/game");
+    }
+    
+})
+socket.on("gameHosted",(data)=>{
+  if(data)
+  {
+    localStorage.setItem("currentGame",data);
+    navigate("/game");
+  }
+  
+})
   },[socket])
   return (
     <div className="flex flex-col h-screen items-center justify-center w-screen">
       <div className="absolute top-2 right-2 space-x-5">
-        <button><Link to="/login">Se connecter</Link></button>
-        <button><Link to="/register">S'inscrire</Link></button>
+        {(localStorage.getItem("authUser")) ? 
+        (<button onClick={()=>{localStorage.removeItem("authUser");navigate("/")}}><Link to="/login">Se déconnecter</Link></button>) :
+        (<><button><Link to="/login">Se connecter</Link></button><button><Link to="/register">S'inscrire</Link></button></>)}
       </div>
       <div className="flex flex-col space-y-5 text-blue-700">
-      <Link to="/game"><button onClick={()=>testHost()}className="bg-sky-950">Héberger une partie</button></Link>
+      <button onClick={()=>testHost()}className="bg-sky-950">Héberger une partie</button>
         <button className="bg-sky-950">Rejoindre une partie</button>
         </div>
         <div className="flex overflow-y-scroll">
           <ul>
             {gameList.map((game,id)=>(
-              <li id={id} className="cursor-pointer" onClick={(e)=>joinGame(e)} key={game._id}>ID:{game._id} Slot: {game.players.length}/{game.slot}</li>
+              <li id={id} className="cursor-pointer" onClick={(e)=>joinGame(e)} key={game._id}>ID:{game._id} Slot: {game.players?.length}/{game.slot}</li>
             ))}
           </ul>
         </div>
