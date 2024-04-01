@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 const port = 4000
-const portSocket = 4001
+const portSocket = 4002
 const dotenv = require("dotenv");
 const authRoutes = require("./routes/auth.routes.js");
 const gameRoutes = require("./routes/game.routes.js");
@@ -16,73 +16,94 @@ const Game = require("./database/models/game.js");
 
 const { Server } = require("socket.io");
 app.use(cors());
-const io = new Server(server,{
-    cors:{
-        origin:'*'
-    }
+const io = new Server(server, {
+  cors: {
+    origin: '*'
+  }
 });
 
+let targetDate = new Date();
+targetDate.setSeconds(targetDate.getSeconds() + 10);
+//targetDate.setMinutes(targetDate.getMinutes() + 10);                                                                
+//targetDate.setHours(targetDate.getHours() +2);                                                             
+let totalSeconds = Math.floor((targetDate.getTime() - new Date().getTime()) / 1000);
+let intervalId;
+function updateCountdown() {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = Math.floor(totalSeconds % 60);
+  console.log(totalSeconds);
+  totalSeconds--;
+  if (totalSeconds < 0) {
 
+    clearInterval(intervalId);
+
+    console.log("Cycle jour nuit OK")
+  }
+}
+intervalId = setInterval(updateCountdown, 1000);
 const userList = new Set();
 io.on('connection', (socket) => {
-  console.log('a user connected ID: ',socket.id,"  Number of users ",userList.size);
   userList.add(socket.id);
-  socket.on("hostingame", async(data)=>{
-    console.log("DATA JOIN:",data);
+  console.log('a user connected ID: ', socket.id, "  Number of users ", userList.size);
+  socket.on("hostingame", async (data) => {
+    console.log("DATA JOIN:", data);
     const uuid = crypto.randomUUID();
     console.log(crypto.randomUUID());
-    try{
-      const user = await User.findOne({ username:data.user });
-      const newGame = new Game({uuid:uuid,owner:user._id});
-      if(newGame)
-      {
-        socket.emit("gameHosted",uuid);
+    try {
+      const user = await User.findOne({ username: data.user });
+      const newGame = new Game({ uuid: uuid, owner: user._id });
+      if (newGame) {
+        socket.emit("gameHosted", uuid);
         socket.broadcast.emit("updateGame");
+        socket.join(uuid);
       }
       await newGame.save();
-    }catch(error)
-    {
+    } catch (error) {
       console.log(error);
     }
-    //socket.join(data.gameid)
   })
-  socket.on("joinGame", async (data)=>{
-    try{
-      const joinedGame = await Game.findOne({ uuid:data });
-      if(joinedGame)
-      {
+  socket.on("joinGame", async (data) => {
+    try {
+      const joinedGame = await Game.findOne({ uuid: data });
+      if (joinedGame) {
         console.log("Game found");
-        socket.emit("joinStatus",{message:"OK",uuid:data});
-        Game.updateOne({uuid:data},{$push: {players:socket.id}}).then(result => {
-          console.log("GAME UPDATED: ",result);
+
+        Game.updateOne({ uuid: data }, { $push: { players: socket.id } }).then(result => {
+          console.log("GAME UPDATED: ", result);
           socket.broadcast.emit("updateGame");
-        }).catch(error => console.log("ERROR DOCUMENT: ",error))
+          socket.emit("joinStatus", { message: "OK", uuid: data });
+          socket.join(data);
+          console.log("GAME SLOT: " + joinedGame.slot + " PLAYER COUNT: " + joinedGame.players.length)
+          if (joinedGame.slot === joinedGame.players.length) {
+            console.log("GAME FULL");
+          }
+        }).catch(error => console.log("ERROR DOCUMENT: ", error))
 
       }
-      socket.emit("joinStatus","NO");
+      socket.emit("joinStatus", "NO");
 
-    }catch(error)
-    {
+    } catch (error) {
       console.error('Error :', error);
     }
-    let user = {user:socket.id,gameId:data};
+    let user = { user: socket.id, gameId: data };
     userList.add(user);
   })
-  socket.on("message", async (data)=>{
-    try {   
+  socket.on("message", async (data) => {
+    try {
       const newMessage = new Message({ username: data.username, textemsg: data.message.message });
       await newMessage.save();
     } catch (error) {
-        console.error('Error saving message:', error);
+      console.error('Error saving message:', error);
     }
-    data.message.sid=socket.id;
-    console.log(data);
-    socket.to(data.uuid).emit("receive",data);
+    data.message.sid = socket.id;
+    console.log("LOG: ON MESSAGE: ", JSON.stringify(data));
+    socket.to(data.uuid).emit("receive", data);
   })
 
-  socket.on("disconnect", ()=>{
-    console.log('a user disconnected ID: ',socket.id,"  Number of users ",userList.size);
+  socket.on("disconnect", () => {
     userList.delete(socket.id);
+    console.log('a user disconnected ID: ', socket.id, "  Number of users ", userList.size);
   })
 });
 
@@ -98,6 +119,6 @@ app.use("/api/auth", authRoutes.router);
 app.use("/api/game", gameRoutes.router);
 
 app.listen(port, () => {
-    connectToMongoDB.connectToMongoDB();
-    console.log(`Listening on port ${port}`)
+  connectToMongoDB.connectToMongoDB();
+  console.log(`Listening on port ${port}`)
 })

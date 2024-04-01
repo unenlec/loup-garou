@@ -32,12 +32,12 @@ const router = createBrowserRouter([
   }
 ])
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+  <SocketContextProvider>
     <AuthContextProvider>
-      <SocketContextProvider>
-        <RouterProvider router={router} />
-        <Toaster />
-      </SocketContextProvider>
+
+      <RouterProvider router={router} />
+      <Toaster />
+
     </AuthContextProvider>
-  </React.StrictMode>,
+  </SocketContextProvider>,
 )
