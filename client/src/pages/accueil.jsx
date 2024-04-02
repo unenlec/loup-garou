@@ -10,11 +10,14 @@ import Modal from '../components/modal';
 export default function Accueil() {
   const socket = useContext(SocketContext);
   const [modal, setModal] = useState(false);
+  const [dayTime,setDayTime] = useState(60);
+  const [nightTime,,setNightTime] = useState(60);
   const [name, setName] = useState("Partie de " + JSON.parse(localStorage.getItem("authUser")));
   const navigate = useNavigate();
   const [slots, setSlots] = useState(4);
   const hostHandler = () => {
-    socket.emit("hostingame", { user: authUser.username });
+    console.log(name,slots,"Time",dayTime,"Night",nightTime)
+    //socket.emit("hostingame", { user: authUser.username });
 
   }
   const testHost = () => {
@@ -72,22 +75,23 @@ export default function Accueil() {
   }, [socket])
   return (
     <div className="flex flex-col h-screen items-center justify-center w-screen">
-      <Modal modalState={modal} setModalState={setModal} setSlots={setSlots} setName={setName} hostHandler={hostHandler} />
+      <Modal modalState={modal} setModalState={setModal} setSlots={setSlots} setName={setName} hostHandler={hostHandler} setDayTime={setDayTime} setNightTime={setNightTime}/>
       <div className="absolute top-2 right-2 space-x-5">
         {(localStorage.getItem("authUser")) ?
-          (<button onClick={() => { localStorage.removeItem("authUser"); navigate("/") }}><Link to="/login">Se déconnecter</Link></button>) :
+          (<><button onClick={() => { localStorage.removeItem("authUser"); navigate("/") }}><Link to="/login">Mon Profil</Link></button><button onClick={() => { localStorage.removeItem("authUser"); navigate("/") }}><Link to="/login">Se déconnecter</Link></button></>) :
           (<><button><Link to="/login">Se connecter</Link></button><button><Link to="/register">S'inscrire</Link></button></>)}
       </div>
-      <div className="flex flex-col space-y-5 text-blue-700">
+      <div className="flex flex-col space-y-5 text-blue-700 fixed">
         <button onClick={() => testHost()} className="bg-sky-950">Héberger une partie</button>
         <button className="bg-sky-950">Rejoindre une partie</button>
-      </div>
-      <div className="flex overflow-y-scroll">
         <ul>
           {gameList.map((game, id) => (
             <li id={id} className="cursor-pointer" onClick={(e) => joinGame(e)} key={game._id}>ID:{game._id} Slot: {game.players?.length}/{game.slot}</li>
           ))}
         </ul>
+      </div>
+      <div className="flex overflow-y-scroll">
+        
       </div>
 
     </div>

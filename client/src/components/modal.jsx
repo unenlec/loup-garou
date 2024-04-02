@@ -1,4 +1,4 @@
-export default function Modal({ modalState, setModalState, setSlots, setName, hostHandler }) {
+export default function Modal({ modalState, setModalState, setSlots, setName,setDayTime,setNightTime, hostHandler }) {
     const hiddenOrNot = modalState ? "block" : "hidden";
     return (
         <div className={hiddenOrNot + " absolute h-full w-full flex justify-center items-center z-50 bg-black/40"}
@@ -13,9 +13,9 @@ export default function Modal({ modalState, setModalState, setSlots, setName, ho
                 <input onChange={(e) => setSlots(e.target.value)} placeholder="4"></input>
                 <div className="flex">
                     <label>Temps Discussion: </label>
-                    <input className="w-full"></input>
+                    <input onChange={(e) => setDayTime(e.target.value)} className="w-full"></input>
                     <label>Temps Nuit: </label>
-                    <input className="w-full"></input>
+                    <input onChange={(e) => setNightTime(e.target.value)} className="w-full"></input>
                 </div>
                 <button onClick={() => hostHandler()}>
                     Créer

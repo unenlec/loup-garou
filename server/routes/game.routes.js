@@ -26,4 +26,26 @@ router.post("/getPlayers", async (req,res)=>{
         console.log(error);
     }
 })
+
+router.post("/createGame", async (req,res)=>{
+    try{
+        const {uuid} = req.body;
+        const game = await Game.findOne({uuid});
+        res.status(200).json(JSON.stringify(game));
+    }catch(error)
+    {
+        console.log(error);
+    }
+})
+
+router.post("/getGameData", async (req,res)=>{
+    try{
+        const {uuid} = req.body;
+        const game = await Game.findOne({uuid});
+        res.status(200).json(JSON.stringify(game));
+    }catch(error)
+    {
+        console.log(error);
+    }
+})
 module.exports = { router };

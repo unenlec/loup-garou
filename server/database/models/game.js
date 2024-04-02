@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 
 const gameSchema = new mongoose.Schema({
-
     uuid: {
         type: String,
         required: true,
@@ -17,6 +16,21 @@ const gameSchema = new mongoose.Schema({
     slot: {
         type: Number,
         default: 4
+    },
+    dayTime:{
+        type:Number,
+        default: 120
+    },
+    nightTime:{
+        type:Number,
+        default: 120
+    },
+    round:{
+        type:Number,
+        default: 1
+    },
+    state:{
+        type:String
     },
     finished:{
         type:Boolean,
