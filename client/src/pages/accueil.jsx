@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom"
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
 import { SocketContext } from "../context/SocketContext";
-import {useContext,useEffect,useState} from "react"
+import { useContext, useEffect, useState } from "react"
+import Modal from '../components/modal';
 
 
 import sorciereImage from '/images/sorciere.jpg';
@@ -23,13 +24,36 @@ export default function Accueil() {
   const [slots, setSlots] = useState(4);
   const { authUser, setAuthUser } = useContext(AuthContext);
   const [gameList, setGameList] = useState([]);
-  const navigate = useNavigate();
-  
-  document.addEventListener("DOMContentLoaded", function() {
-    const rules = document.getElementById("rules");
-  });
 
-  const joinGame =(e)=>{
+
+  const hostHandler = async () => {
+    console.log(name,slots,"Time",dayTime,"Night",nightTime)
+    //
+    try {
+      const res = await fetch("/api/game/createGame", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username:authUser.username,name:name,slots:slots,dayTime:dayTime,nightTime:nightTime,socket:socket.id })
+      })
+      const data = await res.json();
+      if(data.status==="gameOK")
+      {
+        socket.emit("hostingame", { uuid:data.uuid });
+      }
+      console.log(data);     
+  } catch (error) {
+      toast.error(error.message)
+  }
+
+  }
+  const testHost = () => {
+    setModal(true);
+    //socket.emit("hostingame", { user: authUser.username });
+  }
+ 
+
+
+  const joinGame = (e) => {
     console.log(e.target.id);
     socket.emit("joinGame", gameList[Number(e.target.id)].uuid);
   }
@@ -55,30 +79,33 @@ export default function Accueil() {
     }
     socket.on("updateGame", () => {
       getGameList();
-  })
-  socket.on("joinStatus",(data)=>{
-    if(data.message=="OK")
-    {
-      localStorage.setItem("currentGame",data.uuid);
-      console.log("CURRENT GAME: ",data)
-      navigate("/game");
-    }
-    
-})
-socket.on("gameHosted",(data)=>{
-  if(data)
-  {
-    localStorage.setItem("currentGame",data);
-    navigate("/game");
-  }
-  
-})
+    })
+    socket.on("joinStatus", (data) => {
+      if (data.message == "OK") {
+        localStorage.setItem("currentGame", data.uuid);
+        console.log("CURRENT GAME: ", data)
+        navigate("/game");
+      }
 
-  },[socket])
+    })
+    socket.on("gameHosted", (data) => {
+      if (data) {
+        localStorage.setItem("currentGame", data);
+        navigate("/game");
+        setModal(false);
+      }
+      console.log("GAME HOSTED ??")
+
+    })
+  }, [socket])
+
+  document.addEventListener("DOMContentLoaded", function() {
+    const rules = document.getElementById("rules");
+  });
   return (
 
     <div className="flex flex-col h-screen items-center justify-center w-screen">
-      
+      <Modal modalState={modal} setModalState={setModal} setSlots={setSlots} setName={setName} hostHandler={hostHandler} setDayTime={setDayTime} setNightTime={setNightTime}/>
     <div className="absolute w-1/3 h-screen left-0">
       <div id="rules" className="flex-box bg-slate-600 w-5/6 m-14 h-5/6 overflow-auto rounded-xl">
       <p className="text-2xl m-8">Déroulement du jeu : </p><br></br>
@@ -218,21 +245,25 @@ socket.on("gameHosted",(data)=>{
 
   </div>
   <div className=" absolute left-1/3 h-screen w-2/3">
-    <div className=" relative w-3/4 h-3/4 bg-slate-600 my-32 mx-8 rounded-xl">
-          <div className="absolute w-5/6 h-16 m-10 bg-stone-500 rounded-xl text-center">
-          <p className='text-xl'>Lobby Test</p>
-          <p>X/8</p></div>
-          <button className="absolute bottom-0 right-0 m-8 w-32 h-16">Create</button>
+    <div className=" relative w-3/4 h-3/4 bg-slate-600 my-32 mx-8 rounded-xl flex flex-col p-2 space-y-5">
+          
+          {gameList.map((game, id) => (
+            <div className=" bg-stone-500 rounded-xl text-center p-2">
+            <p id={id} className="cursor-pointer text-xl" onClick={(e) => joinGame(e)} key={game._id}>ID:{game._id} Slot: {game.players?.length}/{game.slot}</p>
+            </div>
+          ))}
+          
+          <button onClick={() => testHost()} className="absolute bottom-1 right-0 m-8 w-32 h-16">Create</button>
     </div>
   </div> 
 
   <div className="absolute top-2 right-2 space-x-5">
-    {(localStorage.getItem("authUser")) ? 
-    (<button onClick={()=>{localStorage.removeItem("authUser");navigate("/")}}><Link to="/login">Se déconnecter</Link></button>) :
-    (<><button><Link to="/login">Se connecter</Link></button><button><Link to="/register">S'inscrire</Link></button></>)}
-  </div>
+  {(localStorage.getItem("authUser")) ?
+          (<><button onClick={() => { localStorage.removeItem("authUser"); navigate("/") }}><Link to="/login">Mon Profil</Link></button><button onClick={() => { localStorage.removeItem("authUser"); navigate("/") }}><Link to="/login">Se déconnecter</Link></button></>) :
+          (<><button><Link to="/login">Se connecter</Link></button><button><Link to="/register">S'inscrire</Link></button></>)}
+      </div>
 
-  <div className='absolute top-2 right-64 space-x-4'> 
+  <div className='absolute top-2 right-54 space-x-4'> 
     <audio loop id="musique" src = "/sound/background.mp3" ></audio>
     <button onClick={()=>{let audio = document.getElementById("musique"); audio.play();}}>Play</button>
     <button onClick={()=>{let audio = document.getElementById("musique"); audio.pause(); audio.currentTime = 0;}}>Stop</button>
