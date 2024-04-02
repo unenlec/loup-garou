@@ -15,17 +15,35 @@ export default function Accueil() {
   const [name, setName] = useState("Partie de " + JSON.parse(localStorage.getItem("authUser")));
   const navigate = useNavigate();
   const [slots, setSlots] = useState(4);
-  const hostHandler = () => {
+  const { authUser, setAuthUser } = useContext(AuthContext);
+  const [gameList, setGameList] = useState([]);
+
+
+  const hostHandler = async () => {
     console.log(name,slots,"Time",dayTime,"Night",nightTime)
-    //socket.emit("hostingame", { user: authUser.username });
+    //
+    try {
+      const res = await fetch("/api/game/createGame", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username:authUser.username,name:name,slots:slots,dayTime:dayTime,nightTime:nightTime })
+      })
+      const data = await res.json();
+      if(data.status==="gameOK")
+      {
+        socket.emit("hostingame", { uuid:data.uuid });
+      }
+      console.log(data);     
+  } catch (error) {
+      toast.error(error.message)
+  }
 
   }
   const testHost = () => {
     setModal(true);
     //socket.emit("hostingame", { user: authUser.username });
   }
-  const { authUser, setAuthUser } = useContext(AuthContext);
-  const [gameList, setGameList] = useState([]);
+ 
 
 
   const joinGame = (e) => {

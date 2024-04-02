@@ -6,6 +6,10 @@ const gameSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    name:{
+        type:String,
+        default: "Partie"
+    },
     owner: {
         type: mongoose.ObjectId,
         required: true,

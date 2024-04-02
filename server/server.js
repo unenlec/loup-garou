@@ -42,7 +42,7 @@ function updateCountdown() {
       gameData.state = "Jour";
       console.log("Cycle jour nuit OK"+testObj.round)
       testObj.round++;
-      jourNuit(testObj)
+      jourNuit(gameData)
     }
   }else{
   console.log(totalSecondsDay);
@@ -74,17 +74,23 @@ io.on('connection', (socket) => {
   console.log('a user connected ID: ', socket.id, "  Number of users ", userList.size);
   socket.on("hostingame", async (data) => {
     console.log("DATA JOIN:", data);
-    const uuid = crypto.randomUUID();
-    console.log(crypto.randomUUID());
+    /*const uuid = crypto.randomUUID();
+    console.log(crypto.randomUUID());*/
     try {
-      const user = await User.findOne({ username: data.user });
+      /*const user = await User.findOne({ username: data.user });
       const newGame = new Game({ uuid: uuid, owner: user._id,players:[socket.id] });
       if (newGame) {
         socket.emit("gameHosted", uuid);
         socket.broadcast.emit("updateGame");
         socket.join(uuid);
       }
-      await newGame.save();
+      await newGame.save();*/
+      Game.updateOne({ uuid: data.uuid }, { $push: { players: socket.id } }).then(result => {
+        console.log("GAME UPDATED: ", result);
+        socket.emit("gameHosted", data.uuid);
+        socket.broadcast.emit("updateGame");
+        socket.join(data.uuid);
+      }).catch(error => console.log("ERROR DOCUMENT: ", error))
     } catch (error) {
       console.log(error);
     }
