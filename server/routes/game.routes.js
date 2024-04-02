@@ -29,11 +29,11 @@ router.post("/getPlayers", async (req,res)=>{
 
 router.post("/createGame", async (req,res)=>{
     try{
-        const {username,name,slots,dayTime,nightTime} = req.body;
+        const {username,name,slots,dayTime,nightTime,socket} = req.body;
         const uuid = crypto.randomUUID();
         console.log(crypto.randomUUID());
           const user = await User.findOne({ username: username });
-          const newGame = new Game({ uuid: uuid, owner: user._id,name:name,slot:slots,dayTime:dayTime,nightTime:nightTime});
+          const newGame = new Game({ uuid: uuid, owner: user._id,name:name,slot:slots,dayTime:dayTime,nightTime:nightTime,players:[socket]});
           if (newGame) {
             /*socket.emit("gameHosted", uuid);
             socket.broadcast.emit("updateGame");

@@ -4,7 +4,8 @@ import { SocketContext } from "../context/SocketContext";
 export default function Game() {
     const socket = useContext(SocketContext);
     const [message, setMessage] = useState({});
-    const [gameData, setGameData] = useState({round:1,totalSecondsDay:"??"});
+    const [gameData, setGameData] = useState({round:1,timeSeconds:"??",state:"Nuit"});
+    const stateStyle = gameData?.state==="Jour" ? "bg-white" : "bg-black";
     const [players, setPlayers] = useState([]);
     const [messageReceived, setMessageReceived] = useState([]);
     const sendMessage = () => {
@@ -73,6 +74,9 @@ export default function Game() {
             console.log(data)
             setGameData(data)
         })
+        socket.on("updateCurrentGame", () => {
+            getPlayers()
+          })
         /* socket.on("receive",(data)=>{
              setMessageReceived(old => [...old,data.message])
              console.log(messageReceived)
@@ -87,29 +91,29 @@ export default function Game() {
     return (
         <div>
             {localStorage.getItem("authUser") ? (
-                <div className="flex">
-                    <div className="absolute inset-y-0 left-0 bg-red-400 w-3/4">
-                        <div className='absolute right-1/4 w-2/4 h-full'>
-                            <h1>JOUR {gameData.round} Temps:{formatTime(gameData.totalSecondsDay)}</h1>
-                            {players.map((player) => (
-                                <div key={player} onClick={() => getPlayers()}>
-                                    Joueur: {player}
+                                <div className="flex">
+                                <div className={stateStyle+" absolute inset-y-0 left-0 w-3/4 transition"}>
+                                    <div className='absolute right-1/4 w-2/4 h-full'>
+                                        <h1>TOUR {gameData.round} Temps:{formatTime(gameData.timeSeconds)}</h1>
+                                        {players.map((player) => (
+                                            <div key={player} onClick={() => getPlayers()}>
+                                                Joueur: {player}
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                    <div className="absolute inset-y-0 right-0 w-1/4 bg-white ">
-                            <div className="overflow-y-scroll h-full">
-                                {messageReceived.map((m) => (
-                                    <p key={key++}>{m.username}{m.sid}: {m.message}</p>
-                                ))}
+                                <div className="absolute inset-y-0 right-0 w-1/4 bg-white border">
+                                        <div className="overflow-y-scroll h-full">
+                                            {messageReceived.map((m) => (
+                                                <p key={key++}>{m.username}{m.sid}: {m.message}</p>
+                                            ))}
+                                        </div>
+                                        <div className="bottom-0 fixed">
+                                        <input className='w-full border border-[#646cff]' onChange={(event) => setMessage({ message: event.target.value, username: JSON.parse(localStorage.getItem("authUser")).username })} placeholder="Message" />
+                                        <button className='w-full text-blue-700 bg-sky-950' onClick={sendMessage}>Envoyer</button>
+                                        </div>
+                                </div>
                             </div>
-                            <div className="bottom-0 fixed">
-                            <input className='w-full border border-[#646cff]' onChange={(event) => setMessage({ message: event.target.value, username: JSON.parse(localStorage.getItem("authUser")).username })} placeholder="Message" />
-                            <button className='w-full text-blue-700 bg-sky-950' onClick={sendMessage}>Envoyer</button>
-                            </div>
-                    </div>
-                </div>
             ) :
                 <div>
                     <h1>NOT LOGGED</h1>

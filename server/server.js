@@ -22,39 +22,61 @@ const io = new Server(server, {
   }
 });
 
-let testObj = {uuid:"98956",nightTime:6,dayTime:4,state:"Jour",round:1,finished:false}
-function jourNuit(gameData)
+//let testObj = {uuid:"98956",nightTime:6,dayTime:4,state:"Jour",round:1,finished:false}
+async function jourNuit(gameData)
 {
 let targetDateDay = new Date();
+console.log("TEMPS JOUR: "+gameData.dayTime)
 targetDateDay.setSeconds(targetDateDay.getSeconds() + gameData.dayTime);                                                           
 let totalSecondsDay = Math.floor((targetDateDay.getTime() - new Date().getTime()) / 1000);
 let targetDateNight = new Date();
 targetDateNight.setSeconds(targetDateNight.getSeconds() + gameData.nightTime);                                                           
 let totalSecondsNight = Math.floor((targetDateNight.getTime() - new Date().getTime()) / 1000);
 let intervalId;
+let game;
+try{
+  game = await Game.find({uuid:gameData.uuid});
+  game= game[0]
+}catch(error)
+{
+  console.log(error);
+}
+
 function updateCountdown() {
-  if(gameData.state === "Nuit"){
-    console.log(totalSecondsNight);
+  if(game.state === "Nuit"){
+    console.log("SECONDS NUIT: "+totalSecondsNight);
+    io.to(gameData.uuid).emit("time",{timeSeconds: totalSecondsNight,round:game.round,state:game.state});
     totalSecondsNight--;
-    if (totalSecondsNight < 0 && testObj.finished===false) {
-  
+    if (totalSecondsNight < 0) {
+      console.log("ICI NUIT")
       clearInterval(intervalId);
-      gameData.state = "Jour";
-      console.log("Cycle jour nuit OK"+testObj.round)
-      testObj.round++;
-      jourNuit(gameData)
+      console.log("GUUID: "+game.uuid)
+      Game.updateOne({ uuid: game.uuid },{$set: {state: "Jour"},$inc: {round: 1}}).then((result)=>{
+        console.log("GAME UPDATED");
+        console.log("Cycle jour nuit OK"+game.round)
+        jourNuit(game)
+      }).catch(error=>console.log(error));
     }
   }else{
-  console.log(totalSecondsDay);
-  io.to(gameData.uuid).emit("time",{totalSecondsDay,round:gameData.round,state:gameData.state});
+  console.log("SECONDS: "+totalSecondsDay);
+  io.to(gameData.uuid).emit("time",{timeSeconds: totalSecondsDay,round:game.round,state:game.state});
   totalSecondsDay--;
-  if (totalSecondsDay < 0 && testObj.finished===false) {
-
+  if (totalSecondsDay < 0 ) {
+    console.log("ICI JOUR")
     clearInterval(intervalId);
-    console.log("Cycle jour nuit OK"+testObj.round)
-    gameData.state = "Nuit";
-    testObj.round++;
-    jourNuit(testObj)
+    console.log("GUUID: "+game.uuid)
+    Game.updateOne({ uuid: game.uuid },{$set: {state: "Nuit"},$inc: {round: 1}}).then((result)=>{
+      console.log("GAME UPDATED");
+      console.log(game)
+      console.log("Cycle jour nuit OK"+game.round)
+      jourNuit(game)
+    }).catch(error=>console.log(error));
+    
+    /*Game.updateOne({ uuid: game.uuid },{$inc: {round: 1}}).then((result)=>{
+      console.log("GAME UPDATED");
+    }).catch(error=>console.log(error));*/
+    //console.log(game)
+    
   }
   }
 }
@@ -74,40 +96,36 @@ io.on('connection', (socket) => {
   console.log('a user connected ID: ', socket.id, "  Number of users ", userList.size);
   socket.on("hostingame", async (data) => {
     console.log("DATA JOIN:", data);
-    /*const uuid = crypto.randomUUID();
-    console.log(crypto.randomUUID());*/
-    try {
-      /*const user = await User.findOne({ username: data.user });
-      const newGame = new Game({ uuid: uuid, owner: user._id,players:[socket.id] });
-      if (newGame) {
-        socket.emit("gameHosted", uuid);
+    socket.emit("gameHosted", data.uuid);
         socket.broadcast.emit("updateGame");
-        socket.join(uuid);
-      }
-      await newGame.save();*/
+        io.to(data.uuid).emit("updateCurrentGame")
+        socket.join(data.uuid);
+    /*try {
+      console.log("LA SOCKET:",socket.id)
       Game.updateOne({ uuid: data.uuid }, { $push: { players: socket.id } }).then(result => {
         console.log("GAME UPDATED: ", result);
         socket.emit("gameHosted", data.uuid);
         socket.broadcast.emit("updateGame");
+        io.to(data.uuid).emit("updateCurrentGame")
         socket.join(data.uuid);
       }).catch(error => console.log("ERROR DOCUMENT: ", error))
     } catch (error) {
       console.log(error);
-    }
+    }*/
   })
   socket.on("joinGame", async (data) => {
     try {
       const joinedGame = await Game.findOne({ uuid: data });
       if (joinedGame) {
         console.log("Game found");
-
         Game.updateOne({ uuid: data }, { $push: { players: socket.id } }).then(result => {
           console.log("GAME UPDATED: ", result);
           socket.broadcast.emit("updateGame");
           socket.emit("joinStatus", { message: "OK", uuid: data });
+          io.to(data).emit("updateCurrentGame")
           socket.join(data);
-          console.log("GAME SLOT: " + joinedGame.slot + " PLAYER COUNT: " + joinedGame.players.length)
-          if (joinedGame.slot === joinedGame.players.length) {
+          console.log("GAME SLOT: " + joinedGame.slot + " PLAYER COUNT: " + joinedGame.players.length+1)
+          if (joinedGame.slot === joinedGame.players.length+1) {
             console.log("GAME FULL");
             jourNuit(joinedGame)
             //socket.to(joinedGame.uuid).emit("startGame");

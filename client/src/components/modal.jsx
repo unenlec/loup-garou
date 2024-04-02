@@ -8,7 +8,7 @@ export default function Modal({ modalState, setModalState, setSlots, setName,set
                     Création de partie
                 </h1>
                 <label>Nom de la partie: </label>
-                <input onChange={(e) => setName(e.target.value)} placeholder={"Partie de " + JSON.parse(localStorage.getItem("authUser"))?.username}></input>
+                <input onChange={(e) => setName(e.target.value)} placeholder={"Partie de " + JSON.stringify(localStorage.getItem("authUser"))?.username}></input>
                 <label>Nombre de joueurs: </label>
                 <input onChange={(e) => setSlots(e.target.value)} placeholder="4"></input>
                 <div className="flex">

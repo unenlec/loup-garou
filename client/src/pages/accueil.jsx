@@ -11,7 +11,7 @@ export default function Accueil() {
   const socket = useContext(SocketContext);
   const [modal, setModal] = useState(false);
   const [dayTime,setDayTime] = useState(60);
-  const [nightTime,,setNightTime] = useState(60);
+  const [nightTime,setNightTime] = useState(60);
   const [name, setName] = useState("Partie de " + JSON.parse(localStorage.getItem("authUser")));
   const navigate = useNavigate();
   const [slots, setSlots] = useState(4);
@@ -26,7 +26,7 @@ export default function Accueil() {
       const res = await fetch("/api/game/createGame", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username:authUser.username,name:name,slots:slots,dayTime:dayTime,nightTime:nightTime })
+          body: JSON.stringify({ username:authUser.username,name:name,slots:slots,dayTime:dayTime,nightTime:nightTime,socket:socket.id })
       })
       const data = await res.json();
       if(data.status==="gameOK")

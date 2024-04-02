@@ -34,7 +34,8 @@ const gameSchema = new mongoose.Schema({
         default: 1
     },
     state:{
-        type:String
+        type:String,
+        default: "Nuit"
     },
     finished:{
         type:Boolean,
