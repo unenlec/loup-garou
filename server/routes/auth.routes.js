@@ -29,9 +29,6 @@ const imageFilter = (req,file,cb)=>{
 
 const upload = multer({storage: storage,fileFilter:imageFilter})
 
-
-
-
 router.post("/login", async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -49,6 +46,25 @@ router.post("/login", async (req, res) => {
         console.log("ERROR: " + error.message);
     }
 })
+
+
+router.post("/profil", async (req, res) => {
+    try {
+        const { username } = req.body;
+        const user = await User.findOne({ username: req.body.username });
+        console.log(user)
+        if(!user)
+        {
+            return res.status(400).json({error:"Interdit"})
+        }
+        res.status(200).json({
+            message:"Connexion OK",username:user.username,email:user.email,profilePicture:user.profilePicture
+        })
+    } catch (error) {
+        console.log("ERROR: " + error.message);
+    }
+})
+
 
 router.use("/img",express.static(path.join(__dirname,'img')));
 
@@ -78,7 +94,8 @@ router.post("/register" , upload.single("avatar"), async (req, res) => {
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        const isProfilePicture = req.file ? req.file.path : "";
+        const isProfilePicture = req.file ? req.file.filename : "";
+        console.log(req.file)
         const newUser = new User({
             username,
             email,

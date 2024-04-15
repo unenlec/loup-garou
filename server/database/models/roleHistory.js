@@ -10,6 +10,14 @@ const roleHistorySchema = new mongoose.Schema({
         type: mongoose.ObjectId,
         required: true
     },
+    username:{
+        type:String,
+        required:true
+    },
+    socketid:{
+        type:String,
+        required:true
+    },
     role: {
         type: String,
         default: "Villageois",

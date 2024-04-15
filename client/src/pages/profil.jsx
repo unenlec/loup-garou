@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react'
+import { useState, useContext,useEffect } from 'react'
 import toast from 'react-hot-toast';
 import { AuthContext } from '../context/AuthContext';
 import {useNavigate} from "react-router-dom"
@@ -11,7 +11,8 @@ export default function Profil() {
             username: '',
             email: '',
             password: '',
-            confirmPassword: ''
+            confirmPassword: '',
+            profilePicture:''
         }
     );
     const handleInputErrors = ({ username, email, password, confirmPassword }) => {
@@ -25,43 +26,46 @@ export default function Profil() {
         }
         return true
     }
-    const handleSubmit = async () => {
-        const so = handleInputErrors(data)
-        const { username, email, password, confirmPassword } = data;
-        if (!so) return;
+    const getProfil = async () => {
         try {
-            const res = await fetch("/api/auth/register", {
+            console.log(JSON.parse(localStorage.getItem("authUser")).username)
+            const res = await fetch("/api/auth/profil", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, email, password, confirmPassword })
+                body: JSON.stringify({username:JSON.parse(localStorage.getItem("authUser")).username})
             })
             const data = await res.json();
+            setData({
+                username:data.username,
+                email:data.email,
+                profilePicture:data.profilePicture
+            })
+            console.log(data)
             if (data.error) {
                 throw new Error(data.error)
             }
-            localStorage.setItem("authUser", JSON.stringify(data))
-            setAuthUser(data);
-            toast.success("Inscription OK, redirection...")
-            setTimeout(()=>navigate("/"),2000);
+            toast.success("Profil OK...")
             
         } catch (error) {
             toast.error(error.message)
         }
-        console.log(data)
     }
-    const handleNavigate = (e) =>{
-        toast.success("SUCCESS")
+    useEffect(()=>{
+        localStorage.setItem("currentVote","");
+        getProfil()
         
-    }
+
+    },[])
     return (
         <div className="flex flex-col gap-3">
             <h1>Page de Profil</h1>
+            <img src={data.profilePicture==="" ? "/images/ppBase.jpg" : "http://localhost:4000/api/auth/getimg/"+data.profilePicture} className="w-40 h-40"></img>
             <label htmlFor="username">Nom utilisateur: </label>
-            <input value={data.username} onChange={(e) => setData({ ...data, username: e.target.value })} type="text" />
+            <input placeholder={data.username} onChange={(e) => setData({ ...data, username: e.target.value })} type="text" />
             <label htmlFor="username">Email: </label>
-            <input value={data.email} onChange={(e) => setData({ ...data, email: e.target.value })} type="text" />
+            <input placeholder={data.email} onChange={(e) => setData({ ...data, email: e.target.value })} type="text" />
             <label htmlFor="username">Nouveau Mot de passe: </label>
-            <input value={data.password} onChange={(e) => setData({ ...data, password: e.target.value })} type="password" />
+            <input placeholder={data.password} onChange={(e) => setData({ ...data, password: e.target.value })} type="password" />
             <button onClick={(e) => handleSubmit(e)}>Valider</button>
         </div>
     )

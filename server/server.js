@@ -22,11 +22,13 @@ const io = new Server(server, {
     origin: "*",
   },
 });
-function addPlayerHistory(player, id, role) {
+function addPlayerHistory(player, id, role,username,socketid) {
   const newRoleHistory = new roleHistory({
     game: id,
     player: player,
     role: role,
+    username:username,
+    socketid:socketid
   });
   newRoleHistory.save();
   Game.updateOne({ _id: id }, { $push: { roles: newRoleHistory } })
@@ -115,9 +117,9 @@ async function jourNuit(gameData) {
             for (; i < nbLoup; i++) {
               try{
                 //let currentPlayer = await Game.findOne({uuid: gameData.uuid}).populate("players");
-                addPlayerHistory(playerRandom[i].user, game._id, "Loup");
-                console.log("ROLE: "+playerRandom[i].socketid+" LOUP")
-                io.to(playerRandom[i].socketid).emit("role", { role: "Loup" });
+                addPlayerHistory(playerRandom[i].user, game._id, "loup",playerRandom[i].username,playerRandom[i].socketid);
+                console.log("ROLE: "+playerRandom[i].socketid+" loup")
+                io.to(playerRandom[i].socketid).emit("role", { role: "loup" });
               }catch(error)
               {
                 console.log(error)
@@ -127,9 +129,9 @@ async function jourNuit(gameData) {
             for (; i < nbSpe + nbLoup; i++) {
               try{
                 //let currentPlayer = await Game.findOne({uuid: gameData.uuid}).populate("players");
-                addPlayerHistory(playerRandom[i].user, game._id, "SPE");
-                console.log("ROLE: "+playerRandom[i].socketid+" SPE")
-                io.to(playerRandom[i].socketid).emit("role", { role: "SPE" });
+                addPlayerHistory(playerRandom[i].user, game._id, "loup",playerRandom[i].username,playerRandom[i].socketid);
+                console.log("ROLE: "+playerRandom[i].socketid+" voyante")
+                io.to(playerRandom[i].socketid).emit("role", { role: "loup" });
               }catch(error)
               {
                 console.log(error)
@@ -138,9 +140,9 @@ async function jourNuit(gameData) {
             for (; i < nbVilla + nbSpe + nbLoup; i++) {
               try{
                 //let currentPlayer = await Game.findOne({uuid: gameData.uuid}).populate("players");
-                addPlayerHistory(playerRandom[i].user, game._id, "Villageois");
-                console.log("ROLE: "+playerRandom[i].socketid+" Villageois")
-                io.to(playerRandom[i].socketid).emit("role", { role: "Villageois" });
+                addPlayerHistory(playerRandom[i].user, game._id, "villageois",playerRandom[i].username,playerRandom[i].socketid);
+                console.log("ROLE: "+playerRandom[i].socketid+" villageois")
+                io.to(playerRandom[i].socketid).emit("role", { role: "villageois" });
               }catch(error)
               {
                 console.log(error)
@@ -181,11 +183,6 @@ async function jourNuit(gameData) {
                 jourNuit(game);
               })
               .catch((error) => console.log(error));
-
-            /*Game.updateOne({ uuid: game.uuid },{$inc: {round: 1}}).then((result)=>{
-      console.log("GAME UPDATED");
-    }).catch(error=>console.log(error));*/
-            //console.log(game)
           }
         }
       }
@@ -219,18 +216,6 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("updateGame");
     io.to(data.uuid).emit("updateCurrentGame");
     socket.join(data.uuid);
-    /*try {
-      console.log("LA SOCKET:",socket.id)
-      Game.updateOne({ uuid: data.uuid }, { $push: { players: socket.id } }).then(result => {
-        console.log("GAME UPDATED: ", result);
-        socket.emit("gameHosted", data.uuid);
-        socket.broadcast.emit("updateGame");
-        io.to(data.uuid).emit("updateCurrentGame")
-        socket.join(data.uuid);
-      }).catch(error => console.log("ERROR DOCUMENT: ", error))
-    } catch (error) {
-      console.log(error);
-    }*/
   });
   socket.on("joinGame", async (data) => {
     try {
@@ -280,11 +265,56 @@ io.on("connection", (socket) => {
   socket.on("vote", async (data)=>{
     try{
       const game = await Game.findOne({ uuid: data.uuid }).populate("players");
-      const player = game.players.find(pl=>pl.username === data.username)
-      player.vote++;
-      await game.save();
-      io.emit("onVote",{user:data.who,vote:1})
+      /*const gameRole = await Game.findOne({ uuid: data.uuid }).populate("roles");
+      const thePlayer = await Player.findOne({username:data.username});
+      if(thePlayer)
+      {
+        const theRole = gameRole.roles.find(rl=> rl.username === data.username)
+        console.log(theRole.role)
+        //console.log(theRole)
+      }*/
+      if(game.round!==0)
+      {
+        console.log(data)
+      if(game.state=="Jour" && data.type==="vote")
+      {
+        const player = game.players.find(pl=>pl.username === data.who)
+        player.vote++;
+        console.log(game)
+        await player.save();
+        await game.save();
+        const re = game.players.map((pl)=>[pl.username,pl.socketid,pl.vote])
+        io.emit("onVote",JSON.stringify(re))
+      }else if(game.state=="Jour" && data.type==="unvote")
+      {
+        const player = game.players.find(pl=>pl.username === data.who)
+        player.vote--;
+        console.log(game)
+        await player.save();
+        await game.save();
+        const re = game.players.map((pl)=>[pl.username,pl.socketid,pl.vote])
+        io.emit("onVote",JSON.stringify(re))
+      }
+      else if(game.state=="Nuit" && data.role==="loup" && data.type==="vote" ){
+        const player = game.players.find(pl=>pl.username === data.who)
+        player.vote++;
+        console.log(game)
+        await player.save();
+        await game.save();
+        const re = game.players.map((pl)=>[pl.username,pl.socketid,pl.vote])
+        io.emit("onVote",JSON.stringify(re))
 
+      }else if(game.state=="Nuit" && data.role==="loup" && data.type==="unvote" ){
+        const player = game.players.find(pl=>pl.username === data.who)
+        player.vote--;
+        console.log(game)
+        await player.save();
+        await game.save();
+        const re = game.players.map((pl)=>[pl.username,pl.socketid,pl.vote])
+        io.emit("onVote",JSON.stringify(re))
+
+      }
+    }
     }catch(error)
     {
       console.log(error)

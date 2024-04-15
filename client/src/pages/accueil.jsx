@@ -19,7 +19,7 @@ export default function Accueil() {
   const [modal, setModal] = useState(false);
   const [dayTime,setDayTime] = useState(60);
   const [nightTime,setNightTime] = useState(60);
-  const [name, setName] = useState("Partie de " + JSON.parse(localStorage.getItem("authUser")));
+  const [name, setName] = useState("Partie de " + JSON.parse(localStorage.getItem("authUser"))?.username);
   const navigate = useNavigate();
   const [slots, setSlots] = useState(4);
   const { authUser, setAuthUser } = useContext(AuthContext);
@@ -58,6 +58,7 @@ export default function Accueil() {
     socket.emit("joinGame", {uuid:gameList[Number(e.target.id)].uuid,username:authUser.username});
   }
   useEffect(() => {
+    localStorage.setItem("currentVote","");
     async function getGameList() {
       try {
         const data = await fetch("/api/game/getGameList", {
@@ -271,17 +272,3 @@ export default function Accueil() {
 </div>
   )
 }
-
-/*
-      <div className="flex flex-col space-y-5 text-blue-700"> 
-      <button onClick={()=>testHost()}className="bg-sky-950">Héberger une partie</button>
-        <button className="bg-sky-950">Rejoindre une partie</button>
-        </div>
-        <div className="flex overflow-y-scroll">
-          <ul>
-            {gameList.map((game,id)=>(
-              <li id={id} className="cursor-pointer" onClick={(e)=>joinGame(e)} key={game._id}>ID:{game._id} Slot: {game.players?.length}/{game.slot}</li>
-            ))}
-          </ul>
-        </div>
-        */
