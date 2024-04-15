@@ -9,102 +9,9 @@ export default function Game() {
     const [gameData, setGameData] = useState({round:1,timeSeconds:"??",state:"Nuit"});
     const stateStyle = gameData?.state==="Jour" ? "url(/images/villageNight.jpg)" : "url(/images/village.jpg)";
     const [players, setPlayers] = useState([]);
+    const [role, setRole] = useState("");
     const [messageReceived, setMessageReceived] = useState([]);
-
-    function positionnerJoueurs(nbJoueurs, rayon) {
-        const positions = [];
-        const angleEntreJoueurs = (2 * Math.PI) / nbJoueurs;
     
-        for (let i = 0; i < nbJoueurs; i++) {
-            const angle = i * angleEntreJoueurs;
-            const x = rayon * Math.cos(angle);
-            const y = rayon * Math.sin(angle);
-            positions.push({ x, y });
-        }
-    
-        return positions;
-    }
-
-    function CreateCercle(nbJoueurs,milieu, usernames){
-        console.log(`mid - Position : (${milieu.x}, ${milieu.y})`);
-        console.log("Recup positions")
-        console.log(nbJoueurs);
-        console.log(milieu);
-        const positionsJoueurs = positionnerJoueurs(nbJoueurs, 100);
-        console.log("Fin Recup positions")
-        console.log(positionsJoueurs);
-
-        const game = document.getElementById('game');
-        game.innerHTML = '';
-
-        positionsJoueurs.forEach((position, index) => {
-            
-            console.log(`Joueur ${index + 1} - Position : (${position.x}, ${position.y})`);
-
-            const container = document.createElement('div');
-            
-            container.id = `JoueurN ${index + 1}`;
-
-            const carre = document.createElement('div');
-                carre.style.left = position.x*3.8 + milieu.x + 'px';
-                carre.style.top = position.y*3.8 + milieu.y + 'px';
-                carre.style.position = 'absolute';
-                carre.style.width = '50px';
-                carre.style.height = '50px';
-                carre.style.backgroundColor = 'blue';
-            
-            console.log(position.x + milieu.x)
-            console.log(position.y + milieu.y)
-            
-            container.append(carre)
-
-            const Name = document.createElement('p');
-
-            let username ;
-            if(usernames[index] != 0){
-                 username = usernames[index];
-            }else{
-                console.log("naps"); console.log(usernames[index]); username = `Joueur ${index + 1}`;
-            }
-
-            Name.textContent = username ;
-            Name.style.left = position.x*3.8 + milieu.x + 'px';
-            Name.style.top = position.y*3.8 + milieu.y + 55 + 'px';
-            Name.style.position = 'absolute';
-
-            container.append(Name);
-            game.append(container);
-
-            console.log("create carre");
-        });
-    
-    }
-   
-    function calculerMilieuElement(element) {
-        const rect = element.getBoundingClientRect();
-        
-        const milieuX = rect.left + rect.width / 2;
-        const milieuY = rect.top + rect.height / 2;
-    
-        return { x: milieuX, y: milieuY };
-    }
-
-    function TableauJoueur(){
-        let TabJoueur = [] ;
-
-        const playersCopy = [...players];
-
-        for (let i = 0; i < JoueurMax; i++) {
-            if (i < playersCopy.length) {
-                TabJoueur.push(playersCopy[i]); 
-            } else {
-                TabJoueur.push(0); 
-            }
-        }
-
-        return TabJoueur ;
-    }
-
     const sendMessage = () => {
         socket.emit("message", { message: message, username: JSON.parse(localStorage.getItem("authUser")).username, uuid: localStorage.getItem("currentGame") })
         setMessageReceived(old => [...old, message])
@@ -137,8 +44,9 @@ export default function Game() {
             }
             );
             const reponse = await data.json();
-            console.log(reponse);
+            console.log("SET PLAYEr");
             setPlayers(JSON.parse(reponse));
+            displayUsernamesInCircle(players)
         } catch (error) {
             console.log(error)
         }
@@ -153,7 +61,51 @@ export default function Game() {
     const closeModal = () => {
         setModalOpen(false);
     };
-
+    const vote = (e) => {
+        console.log(e.target.closest(".username-div").childNodes[0].textContent);
+        socket.emit("vote",{username:JSON.parse(localStorage.getItem("authUser")).username,who:e.target.closest(".username-div").childNodes[0].textContent,uuid:localStorage.getItem("currentGame")})
+        //socket.emit("joinGame", {uuid:gameList[Number(e.target.id)].uuid,username:authUser.username});
+      }
+    
+    function displayUsernamesInCircle(usernames) {
+        const container = document.getElementById('container');
+    
+        container.innerHTML = '';
+      
+        const numUsernames = usernames.length;
+      
+        const radius = Math.min(container.offsetWidth, container.offsetHeight) / 2 * 0.8;
+      
+        for (let i = 0; i < numUsernames; i++) {
+        const div = document.createElement('div');
+        const div2 = document.createElement('div');
+        const p = document.createElement('p');
+          div.classList.add('username-div');
+      
+          p.textContent = usernames[i][0];
+      
+          const angle = (i / numUsernames) * 2 * Math.PI;
+          const x = Math.cos(angle) * radius + container.offsetWidth / 2;
+          const y = Math.sin(angle) * radius + container.offsetHeight / 2;
+          div2.style.borderRadius = "100%"
+          div2.style.border = "1px solid black"
+          div2.style.display = "flex"
+          div2.style.justifyContent ="center"
+          div2.style.alignItems ="center"
+          div2.textContent = usernames[i][2]
+          div.style.position = 'absolute';
+          div.style.left = `${x}px`;
+          div.style.top = `${y}px`;
+          div.style.border= "1px solid black"
+          div.style.cursor="pointer"
+          div.style.background="white"
+          div.onclick = (e)=>vote(e)
+            div.style.padding= "10px"
+            div.appendChild(p);
+            div.appendChild(div2);
+          container.appendChild(div);
+        }
+      }
     useEffect(() => {
         
         const fetchData = async () => {
@@ -174,20 +126,7 @@ export default function Game() {
                 
                 console.log("Fin des requêtes de données");
     
-                // Calcul du milieu de l'élément du jeu
-                const $game = document.getElementById('game')
-                const milieu = calculerMilieuElement($game);
-                
-                console.log("PLAYERS");
-                console.log(players);
-
-                console.log("PLAYERS + 0 ");
-                let tab = TableauJoueur(joueurMax);
-                console.log(tab);
-
-
-                // Création du cercle
-                CreateCercle(joueurMax, milieu,players,tab);
+                  
             } catch (error) {
                 console.log(error);
             }
@@ -204,13 +143,20 @@ export default function Game() {
             console.log(data)
             setGameData(data)
         })
+        socket.on("role", (data) => {
+            setRole(data.role)
+            console.log(JSON.stringify(data))
+        })
         socket.on("updateCurrentGame", () => {
             getPlayers();
+            displayUsernamesInCircle(players)
         })
-        /* socket.on("receive",(data)=>{
-             setMessageReceived(old => [...old,data.message])
-             console.log(messageReceived)
-         });*/
+        socket.on("onVote", (data) => {
+            console.log("vote"+JSON.stringify(data))
+            localStorage.setItem("currentVote",data.user)
+        })
+        displayUsernamesInCircle(players)
+
         return () => {
             if (socket) {
                 socket.off(message);
@@ -222,24 +168,22 @@ export default function Game() {
         <div>
             {localStorage.getItem("authUser") ? (
                             <div className="flex">
-                                <div>
-                                    <div id="game" className={" absolute inset-y-0 left-0 w-3/4 transition bg-cover bg-center"} style={{backgroundImage: stateStyle}}>
-
-                                    </div>
-
+                                <div id="game" className={" absolute inset-y-0 left-0 w-3/4 transition bg-cover bg-center flex items-center justify-center"} style={{backgroundImage: stateStyle}}>
+                                <div id="container" className="top-6 w-full h-[500px] relative "></div>
+                                </div>
                                     <div className="absolute top-0 left-0 w-96 h-40 bg-cover bg-center" style={{ backgroundImage: `url(/images/planche.jpg)` }}>
                                         <div className="absolute top-0 left-0 w-full h-full bg-black opacity-50"></div>
                                             <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center text-white">
-                                                <h1 className="text-2xl font-bold mb-2">TOUR {gameData.round} Temps:{formatTime(gameData.timeSeconds)}</h1>
+                                                <h1 className="text-2xl font-bold mb-2">{isNaN(gameData.timeSeconds) ? `En attente de joueurs...` : (gameData.round === 0 ? `Début de la partie dans ${formatTime(gameData.timeSeconds)}` : `TOUR ${gameData.round} Temps:${formatTime(gameData.timeSeconds)}`)}</h1>
+                                                <button onClick={() => getPlayers()}>ICI</button>
                                                 {players.map((player) => (
-                                                    <div key={player} onClick={() => getPlayers()}>
-                                                        Joueur: {player}
+                                                    <div key={player[1]} onClick={() => getPlayers()}>
+                                                        Joueur: {player[0]} ID: {player[1]}
                                                     </div>                                     
                                                 ))}
                                             </div>
                                         </div>
 
-                                    </div>
                                 
 
                                 <div className="absolute inset bottom-0 left-0">
@@ -266,9 +210,7 @@ export default function Game() {
                                         <button className='w-full text-blue-700 bg-sky-950' onClick={sendMessage}>Envoyer</button>
                                         </div>
                                 </div>                              
-
                             </div>
-
             ) :
                 <div>
                     <h1>NOT LOGGED</h1>

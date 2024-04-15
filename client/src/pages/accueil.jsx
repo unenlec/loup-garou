@@ -55,7 +55,7 @@ export default function Accueil() {
 
   const joinGame = (e) => {
     console.log(e.target.id);
-    socket.emit("joinGame", gameList[Number(e.target.id)].uuid);
+    socket.emit("joinGame", {uuid:gameList[Number(e.target.id)].uuid,username:authUser.username});
   }
   useEffect(() => {
     async function getGameList() {
@@ -249,7 +249,7 @@ export default function Accueil() {
           
           {gameList.map((game, id) => (
             <div className=" bg-stone-500 rounded-xl text-center p-2">
-            <p id={id} className="cursor-pointer text-xl" onClick={(e) => joinGame(e)} key={game._id}>ID:{game._id} Slot: {game.players?.length}/{game.slot}</p>
+            <p id={id} className="cursor-pointer text-xl" onClick={(e) => joinGame(e)} key={game._id}>ID:{game.name} Slot: {game.players?.length}/{game.slot}</p>
             </div>
           ))}
           
@@ -259,7 +259,7 @@ export default function Accueil() {
 
   <div className="absolute top-2 right-2 space-x-5">
   {(localStorage.getItem("authUser")) ?
-          (<><button onClick={() => { localStorage.removeItem("authUser"); navigate("/") }}><Link to="/login">Mon Profil</Link></button><button onClick={() => { localStorage.removeItem("authUser"); navigate("/") }}><Link to="/login">Se déconnecter</Link></button></>) :
+          (<><button><Link to="/profil">Mon Profil</Link></button><button onClick={() => { localStorage.removeItem("authUser"); navigate("/") }}><Link to="/login">Se déconnecter</Link></button></>) :
           (<><button><Link to="/login">Se connecter</Link></button><button><Link to="/register">S'inscrire</Link></button></>)}
       </div>
 

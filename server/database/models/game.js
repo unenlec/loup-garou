@@ -14,24 +14,29 @@ const gameSchema = new mongoose.Schema({
         type: mongoose.ObjectId,
         required: true,
     },
-    players: {
-        type: [String],
-    },
+    players:[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Player"
+    }],
+    roles:[{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "roleHistory"
+    }],
     slot: {
         type: Number,
         default: 4
     },
     dayTime:{
         type:Number,
-        default: 120
+        default: 10
     },
     nightTime:{
         type:Number,
-        default: 120
+        default: 10
     },
     round:{
         type:Number,
-        default: 1
+        default: 0
     },
     state:{
         type:String,

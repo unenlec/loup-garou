@@ -10,6 +10,7 @@ import Login from './pages/login.jsx';
 import { Toaster } from 'react-hot-toast';
 import { AuthContextProvider, AuthContext } from './context/AuthContext.jsx';
 import { SocketContextProvider } from './context/SocketContext.jsx';
+import Profil from './pages/profil.jsx';
 //const { authUser } = useContext(AuthContext);
 
 const router = createBrowserRouter([
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />
+  },
+  {
+    path: "/profil",
+    element: <Profil />
   },
   {
     path: "/register",

@@ -3,6 +3,33 @@ const router = express.Router();
 const User = require("../database/models/user.js");
 const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken.js");
+const multer = require("multer");
+const path = require("path");
+const storage = multer.diskStorage({
+    destination: (req,file,cb)=>{
+        cb(null,'img/')
+    },
+
+    filename: (req,file,cb)=>{
+        cb(null, Date.now() + path.extname(file.originalname))
+    }
+});
+
+const imageFilter = (req,file,cb)=>{
+    if(file.mimetype === "image/jpeg" || file.mimetype ==="image/png")
+    {
+        cb(null,true)
+
+    }else{
+        cb(new Error("Pas une image"),false);
+    }
+}
+
+
+const upload = multer({storage: storage,fileFilter:imageFilter})
+
+
+
 router.post("/login", async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -21,9 +48,11 @@ router.post("/login", async (req, res) => {
     }
 })
 
-router.post("/register", async (req, res) => {
+router.post("/register" , upload.single("avatar"), async (req, res) => {
     try {
+        console.log(req.body)
         const { username, email, password, confirmPassword } = req.body;
+        console.log(username)
         if (password !== confirmPassword) {
             return res.status(400).json({ error: "Mot de passe différents" });
         }
@@ -34,12 +63,12 @@ router.post("/register", async (req, res) => {
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-
+        const isProfilePicture = req.file ? req.file.path : "";
         const newUser = new User({
             username,
             email,
             password: hashedPassword,
-            profilePicture: ""
+            profilePicture: isProfilePicture
         })
         if (newUser) {
             await generateToken(newUser._id, res);
@@ -53,6 +82,8 @@ router.post("/register", async (req, res) => {
         console.log("Error: " + error.message);
     }
 })
+
+
 
 router.get("/logout", (req, res) => {
     res.send("LOGOUT");

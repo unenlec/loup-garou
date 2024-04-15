@@ -41,7 +41,7 @@ export default function Login()
 
     return(
         <div className="flex flex-col gap-3">
-            <h1>Se Connecter</h1>
+                <h1>Se Connecter</h1>
                 <label htmlFor="username">Nom utilisateur: </label>
                 <input value={data.username} onChange={(e) => setData({ ...data, username: e.target.value })} required id="username" name="username" className="border border-black" type="text"/>
                 <label htmlFor="password">Mot de passe: </label>
