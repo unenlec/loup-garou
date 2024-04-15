@@ -6,6 +6,7 @@ export default function Game() {
     const socket = useContext(SocketContext);
     const [message, setMessage] = useState({slot:"??"});
     const [JoueurMax, setJoueurMax] = useState({});
+    const [ImgJoueur, setImgJoueur] = useState({});
     const [gameData, setGameData] = useState({round:1,timeSeconds:"??",state:"Nuit"});
     const stateStyle = gameData?.state==="Jour" ? "url(/images/villageNight.jpg)" : "url(/images/village.jpg)";
     const [players, setPlayers] = useState([]);
@@ -68,44 +69,73 @@ export default function Game() {
       }
     
     function displayUsernamesInCircle(usernames) {
-        const container = document.getElementById('container');
-    
-        container.innerHTML = '';
-      
-        const numUsernames = usernames.length;
-      
-        const radius = Math.min(container.offsetWidth, container.offsetHeight) / 2 * 0.8;
-      
-        for (let i = 0; i < numUsernames; i++) {
+    const container = document.getElementById('container');
+
+    container.innerHTML = '';
+
+    const numUsernames = usernames.length;
+
+    const radius = Math.min(container.offsetWidth, container.offsetHeight) / 2 * 1.5;
+
+    for (let i = 0; i < numUsernames; i++) {
         const div = document.createElement('div');
+        div.classList.add('username-div');
+        const imgContainer = document.createElement('div');
+        const img = document.createElement('img');
         const div2 = document.createElement('div');
         const p = document.createElement('p');
-          div.classList.add('username-div');
-      
-          p.textContent = usernames[i][0];
-      
-          const angle = (i / numUsernames) * 2 * Math.PI;
-          const x = Math.cos(angle) * radius + container.offsetWidth / 2;
-          const y = Math.sin(angle) * radius + container.offsetHeight / 2;
-          div2.style.borderRadius = "100%"
-          div2.style.border = "1px solid black"
-          div2.style.display = "flex"
-          div2.style.justifyContent ="center"
-          div2.style.alignItems ="center"
-          div2.textContent = usernames[i][2]
-          div.style.position = 'absolute';
-          div.style.left = `${x}px`;
-          div.style.top = `${y}px`;
-          div.style.border= "1px solid black"
-          div.style.cursor="pointer"
-          div.style.background="white"
-          div.onclick = (e)=>vote(e)
-            div.style.padding= "10px"
-            div.appendChild(p);
-            div.appendChild(div2);
-          container.appendChild(div);
-        }
-      }
+         
+
+        const angle = (i / numUsernames) * 2 * Math.PI;
+        let x = Math.cos(angle) * radius + container.offsetWidth / 2;
+        const y = Math.sin(angle) * radius + container.offsetHeight / 2;
+
+        
+
+
+
+
+        p.textContent = usernames[i][0];
+        p.className = "text-xl truncate"
+
+        imgContainer.className = "w-24 h-24 absolute bottom-10";
+
+        div2.className = "absolute bottom-2";
+
+        img.src = "/images/ppBase.jpg";
+
+        imgContainer.appendChild(img);
+
+        div2.textContent = usernames[i][2];
+        div2.style.fontSize = "1.5rem"; // Tailwind classe "text-lg"
+        div2.style.fontWeight = "bold"; // Tailwind classe "font-bold"
+        div2.style.color = "red"; // Tailwind classe "text-red-600"
+
+        div.style.backgroundImage = `url(/images/planche.jpg)`;
+        div.style.backgroundSize = "cover";
+        div.style.backgroundPosition = "center";
+        div.style.position = 'absolute';
+        div.style.left = `${x-50}px`;
+        div.style.top = `${y-100}px`;
+        div.style.cursor = "pointer";
+        div.style.border = "1px solid #ccc";
+        div.style.borderRadius = "0.25rem";
+        div.style.overflow = "hidden";
+        div.style.width = "8rem";
+        div.style.height = "10.5rem"; 
+        div.style.display = "flex";
+        div.style.justifyContent = "center";
+
+        div.appendChild(p);
+        div.appendChild(imgContainer);
+        
+        div.appendChild(div2);
+
+        div.onclick = (e) => vote(e);
+            container.appendChild(div);
+    }
+}
+
     useEffect(() => {
         
         const fetchData = async () => {
@@ -176,11 +206,11 @@ export default function Game() {
                                             <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center text-white">
                                                 <h1 className="text-2xl font-bold mb-2">{isNaN(gameData.timeSeconds) ? `En attente de joueurs...` : (gameData.round === 0 ? `Début de la partie dans ${formatTime(gameData.timeSeconds)}` : `TOUR ${gameData.round} Temps:${formatTime(gameData.timeSeconds)}`)}</h1>
                                                 <button onClick={() => getPlayers()}>ICI</button>
-                                                {players.map((player) => (
+                                                {/*players.map((player) => (
                                                     <div key={player[1]} onClick={() => getPlayers()}>
                                                         Joueur: {player[0]} ID: {player[1]}
                                                     </div>                                     
-                                                ))}
+                                                ))*/}
                                             </div>
                                         </div>
 
