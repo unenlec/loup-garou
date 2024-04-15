@@ -69,13 +69,9 @@ export default function Game() {
     
     function displayUsernamesInCircle(usernames) {
         const container = document.getElementById('container');
-    
         container.innerHTML = '';
-      
         const numUsernames = usernames.length;
-      
         const radius = Math.min(container.offsetWidth, container.offsetHeight) / 2 * 0.8;
-      
         for (let i = 0; i < numUsernames; i++) {
         const div = document.createElement('div');
         const div2 = document.createElement('div');

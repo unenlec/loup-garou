@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const generateToken = require("../utils/generateToken.js");
 const multer = require("multer");
 const path = require("path");
+const fs =require("fs")
 const storage = multer.diskStorage({
     destination: (req,file,cb)=>{
         cb(null,'img/')
@@ -30,6 +31,7 @@ const upload = multer({storage: storage,fileFilter:imageFilter})
 
 
 
+
 router.post("/login", async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -45,6 +47,19 @@ router.post("/login", async (req, res) => {
         })
     } catch (error) {
         console.log("ERROR: " + error.message);
+    }
+})
+
+router.use("/img",express.static(path.join(__dirname,'img')));
+
+router.get('/getimg/:filename',(req,res)=>{
+    const filename = req.params.filename;
+    const imagePath = path.join(__dirname,'..','img',filename);
+    if(fs.existsSync(imagePath))
+    {
+        res.sendFile(path.resolve(imagePath))
+    }else{
+        res.status(404).send("Image not found")
     }
 })
 
