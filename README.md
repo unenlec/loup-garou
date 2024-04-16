@@ -155,3 +155,5 @@ ensuite
 `npm i`
 
 `npm run dev`
+
+et enfin le jeu se trouve à l'adresse localhost:5173
