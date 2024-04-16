@@ -138,10 +138,12 @@
 
 puis à la racine il faut créer un fichier ".env" par exemple :  
 
-`MONGO=mongodb://localhost:27017/dbname
-JWT_SECRET=secret`  
+```
+MONGO=mongodb://localhost:27017/dbname      
+JWT_SECRET=secret
+```
 
-ensuite  
+ensuite
 
 `npm i`
 
