@@ -24,20 +24,22 @@ const CircularLayout = ({usernames,vote})=>{
             const div2 = document.createElement('div');
             const p = document.createElement('p');
              
-    
+            
             const angle = (i / numUsernames) * 2 * Math.PI;
             let x = Math.cos(angle) * radius + container.offsetWidth / 2;
             const y = Math.sin(angle) * radius + container.offsetHeight / 2;
     
             p.textContent = usernames[i][0];
-            p.className = "text-xl truncate"
-    
+            p.className = "text-xl truncate text-white"
+            if(usernames[i][0] == JSON.parse(localStorage.getItem("authUser")).username){
+                p.className = "font-bold text-red-500 text-2xl";
+           }
             imgContainer.className = "w-24 h-24 absolute bottom-10";
     
             div2.className = "absolute bottom-2";
     
-            img.src = "/images/ppBase.jpg";
-    
+            //img.src = "/images/ppBase.jpg";
+            img.src = usernames[i][4]==="" ? "/images/ppBase.jpg" : "http://localhost:4000/api/auth/getimg/"+usernames[i][4];
             imgContainer.appendChild(img);
     
             div2.textContent = usernames[i][2];
@@ -59,7 +61,10 @@ const CircularLayout = ({usernames,vote})=>{
             div.style.height = "10.5rem"; 
             div.style.display = "flex";
             div.style.justifyContent = "center";
-    
+            if(usernames[i][3])
+            {
+                div.style.opacity ="0.5"
+            }
             div.appendChild(p);
             div.appendChild(imgContainer);
             

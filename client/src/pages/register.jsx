@@ -15,6 +15,19 @@ export default function Register() {
         }
     );
     const handleInputErrors = ({ username, email, password, confirmPassword }) => {
+        const validateEmail = (email) => {
+            return String(email)
+              .toLowerCase()
+              .match(
+                /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+              );
+          };
+          
+        if(validateEmail(email)===null)
+        {
+            toast.error("Ce n'est pas une email valide ")
+            return false
+        }          
         if (!username || !email || !password || !confirmPassword) {
             toast.error("Merci de remplir tous les champs ")
             return false
@@ -78,6 +91,7 @@ export default function Register() {
     }
     return (
         <div className="flex flex-col gap-3">
+            <button onClick={()=>navigate("/")}>Retour</button>
             <h1>Inscription</h1>
             <label htmlFor="avatar">Photo avatar: </label>
             <input accept='image/jpeg, image/png' type="file" name="avatar" onChange={(e)=>setFile(e.target.files[0])}/>

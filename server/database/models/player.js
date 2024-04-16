@@ -18,8 +18,20 @@ const playerSchema = new mongoose.Schema({
         type:Number,
         default:0
     },
+    profilePicture:{
+        type:String,
+        default:""
+    },
+    role:{
+        type:String,
+        default:""
+    },
     win:
     {
+        type:Boolean,
+        default:false
+    },
+    dead:{
         type:Boolean,
         default:false
     }

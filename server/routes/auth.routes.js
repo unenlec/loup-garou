@@ -79,6 +79,42 @@ router.get('/getimg/:filename',(req,res)=>{
     }
 })
 
+router.post("/changement" , upload.single("avatar"), async (req, res) => {
+    try {
+        console.log(req.body)
+        const { username, email, password } = req.body;
+        const user = await User.findOne({ username:username });
+        let salt=""
+        let hashedPassword=""
+        if(password!=="")
+        {
+            salt = await bcrypt.genSalt(10);
+            hashedPassword= await bcrypt.hash(password, salt);
+        }
+        
+        const isProfilePicture = req.file ? req.file.filename : "";
+        console.log(req.file)
+        if(user)
+        {
+            user.username = username;
+            if(password!=="")
+            {
+                user.password = hashedPassword;
+            }
+            user.email= email;
+            user.profilePicture= isProfilePicture;
+            await user.save();
+            res.status(201).json({ success: "OK USER",username:username,email:email });
+        }else {
+            res.status(400).json({ error: "INVALID USER" });
+        }
+
+    } catch (error) {
+        console.log("Error: " + error.message);
+    }
+})
+
+
 router.post("/register" , upload.single("avatar"), async (req, res) => {
     try {
         console.log(req.body)

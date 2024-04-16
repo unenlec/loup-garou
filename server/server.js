@@ -30,7 +30,9 @@ function addPlayerHistory(player, id, role,username,socketid) {
     username:username,
     socketid:socketid
   });
+  
   newRoleHistory.save();
+  
   Game.updateOne({ _id: id }, { $push: { roles: newRoleHistory } })
     .then((result) => {
       console.log("OK NEWROLEHISTORY");
@@ -38,11 +40,64 @@ function addPlayerHistory(player, id, role,username,socketid) {
     .catch((error) => console.log("ERROR PUSH ROLEHISTORY: ", error));
 }
 
+async function resetVote(uuid,fini)
+{
+  try{
+    const game = await Game.findOne({ uuid: uuid }).populate("players");
+    if(game.round>0)
+    {
+      game.players.sort((a,b)=>b.vote - a.vote);
+      if(game.players[0].vote!==0)
+      {
+        game.players[0].vote = 0;
+        game.players[0].dead = true;
+      }
+      game.players.forEach(pl=>console.log(pl))
+      console.log()
+      let villageoisVivant = game.players.filter(pl=>pl.dead===false && pl.role==="villageois");
+      let loupVivant = game.players.filter(pl=>pl.dead===false && pl.role==="loup");
+      if(loupVivant.length >= villageoisVivant.length)
+      {
+        console.log("LOUP WIN"+loupVivant.length+" "+villageoisVivant.length)
+        game.players.filter(pl=>pl.role==="loup").forEach(pl=>pl.win=true)
+        game.finished = true;
+        fini= true;
+        io.to(uuid).emit("finGame","Loups")
+      }
+      if(loupVivant.length===0)
+      {
+        console.log("Villageois WIN"+loupVivant.length+" "+villageoisVivant.length)
+        game.players.filter(pl=>pl.role==="villageois").forEach(pl=>pl.win=true)
+        game.finished = true;
+        fini= true;
+        io.to(uuid).emit("finGame","Villageois")
+      }
+
+      
+    }
+
+      for(const pl of game.players)
+      {
+        pl.vote = 0;
+        await pl.save();
+      }
+      await game.save();
+      const re = game.players.map((pl)=>[pl.username,pl.socketid,pl.vote,pl.dead,pl.profilePicture])
+        io.emit("onVote",JSON.stringify(re))
+      /*const re = game.players.map(async (pl)=>[pl.username,pl.socketid,pl.vote,pl.dead,await User.findOne({username: pl.username}).profilePicture])
+      io.emit("onVote",JSON.stringify(re))*/
+    }catch(error)
+    {
+      console.log(error)
+    }
+}
+
 //let testObj = {uuid:"98956",nightTime:6,dayTime:4,state:"Jour",round:1,finished:false}
 async function jourNuit(gameData) {
   console.log("GAMEDATA: "+gameData)
+  let fini = false;
   let targetDateWait = new Date();
-  targetDateWait.setSeconds(targetDateWait.getSeconds() + 2);
+  targetDateWait.setSeconds(targetDateWait.getSeconds() + 5);
   let totalSecondsWait = Math.floor(
     (targetDateWait.getTime() - new Date().getTime()) / 1000
   );
@@ -79,6 +134,12 @@ async function jourNuit(gameData) {
         totalSecondsNight--;
         if (totalSecondsNight < 0) {
           console.log("ICI NUIT");
+          resetVote(game.uuid,fini)
+          if(fini)
+            {
+              io.to(game.uuid).emit("finGame","FIN")
+              return;
+            }
           clearInterval(intervalId);
           console.log("GUUID: " + game.uuid);
           Game.updateOne(
@@ -103,6 +164,11 @@ async function jourNuit(gameData) {
           totalSecondsWait--;
           if (totalSecondsWait < 0) {
             console.log("FIN ATTENTE JOUEUR");
+            resetVote(game.uuid,fini)
+            if(fini)
+            {
+              return;
+            }
             clearInterval(intervalId);
             //ROLE
             //V,S,P,M,L
@@ -112,11 +178,15 @@ async function jourNuit(gameData) {
             );
             let nbLoup = Math.floor(game.players.length / 4);
             let nbSpe = Math.ceil((game.players.length - nbLoup) / 2);
-            let nbVilla = game.players.length - nbLoup - nbSpe;
+            //let nbVilla = game.players.length - nbLoup - nbSpe;
+            let nbVilla = nbLoup-game.players.length;
             let i = 0;
             for (; i < nbLoup; i++) {
               try{
                 //let currentPlayer = await Game.findOne({uuid: gameData.uuid}).populate("players");
+                 const rt = await Player.updateOne({socketid:playerRandom[i].socketid},{$set: {role: "loup"}});
+                  console.log("OK ROLE PLAYER"+rt.modifiedCount);
+
                 addPlayerHistory(playerRandom[i].user, game._id, "loup",playerRandom[i].username,playerRandom[i].socketid);
                 console.log("ROLE: "+playerRandom[i].socketid+" loup")
                 io.to(playerRandom[i].socketid).emit("role", { role: "loup" });
@@ -126,7 +196,7 @@ async function jourNuit(gameData) {
               }
               
             }
-            for (; i < nbSpe + nbLoup; i++) {
+            /*for (; i < nbSpe + nbLoup; i++) {
               try{
                 //let currentPlayer = await Game.findOne({uuid: gameData.uuid}).populate("players");
                 addPlayerHistory(playerRandom[i].user, game._id, "loup",playerRandom[i].username,playerRandom[i].socketid);
@@ -137,9 +207,13 @@ async function jourNuit(gameData) {
                 console.log(error)
               }
             }
-            for (; i < nbVilla + nbSpe + nbLoup; i++) {
+            nbVilla + nbSpe + nbLoup
+            */
+            for (; i < game.players.length; i++) {
               try{
                 //let currentPlayer = await Game.findOne({uuid: gameData.uuid}).populate("players");
+                const rt = await Player.updateOne({socketid:playerRandom[i].socketid},{$set: {role: "villageois"}});
+                  console.log("OK ROLE PLAYER"+rt.modifiedCount);
                 addPlayerHistory(playerRandom[i].user, game._id, "villageois",playerRandom[i].username,playerRandom[i].socketid);
                 console.log("ROLE: "+playerRandom[i].socketid+" villageois")
                 io.to(playerRandom[i].socketid).emit("role", { role: "villageois" });
@@ -164,12 +238,18 @@ async function jourNuit(gameData) {
           console.log("SECONDS: " + totalSecondsDay);
           io.to(gameData.uuid).emit("time", {
             timeSeconds: totalSecondsDay,
-            round: game?.round,
-            state: game?.state,
+            round: game.round,
+            state: game.state,
           });
           totalSecondsDay--;
           if (totalSecondsDay < 0) {
             console.log("ICI JOUR");
+            resetVote(game.uuid,fini)
+            if(fini)
+            {
+              io.to(game.uuid).emit("finGame","FIN")
+              return;
+            }
             clearInterval(intervalId);
             console.log("GUUID: " + game.uuid);
             Game.updateOne(
@@ -227,6 +307,7 @@ io.on("connection", (socket) => {
           socketid: socket.id,
           user: user._id,
           username: user.username,
+          profilePicture: user.profilePicture
         });
         await newPlayer.save();
         Game.updateOne({ uuid: data.uuid }, { $push: { players: newPlayer } })
@@ -283,8 +364,11 @@ io.on("connection", (socket) => {
         console.log(game)
         await player.save();
         await game.save();
-        const re = game.players.map((pl)=>[pl.username,pl.socketid,pl.vote])
+        const re = game.players.map((pl)=>[pl.username,pl.socketid,pl.vote,pl.dead,pl.profilePicture])
         io.emit("onVote",JSON.stringify(re))
+      
+        /*const re = game.players.map((pl)=>[pl.username,pl.socketid,pl.vote,pl.dead])
+        io.emit("onVote",JSON.stringify(re))*/
       }else if(game.state=="Jour" && data.type==="unvote")
       {
         const player = game.players.find(pl=>pl.username === data.who)
@@ -292,8 +376,11 @@ io.on("connection", (socket) => {
         console.log(game)
         await player.save();
         await game.save();
-        const re = game.players.map((pl)=>[pl.username,pl.socketid,pl.vote])
+
+        const re = game.players.map((pl)=>[pl.username,pl.socketid,pl.vote,pl.dead,pl.profilePicture])
         io.emit("onVote",JSON.stringify(re))
+        /*const re = game.players.map(async (pl)=>[pl.username,pl.socketid,pl.vote,pl.dead,await User.findOne({username: pl.username}).profilePicture])
+        io.emit("onVote",JSON.stringify(re))*/
       }
       else if(game.state=="Nuit" && data.role==="loup" && data.type==="vote" ){
         const player = game.players.find(pl=>pl.username === data.who)
@@ -301,8 +388,11 @@ io.on("connection", (socket) => {
         console.log(game)
         await player.save();
         await game.save();
-        const re = game.players.map((pl)=>[pl.username,pl.socketid,pl.vote])
+        let tabPush = [];
+        const re = game.players.map((pl)=>[pl.username,pl.socketid,pl.vote,pl.dead,pl.profilePicture])
         io.emit("onVote",JSON.stringify(re))
+        /*const re = game.players.map(async (pl)=>[pl.username,pl.socketid,pl.vote,pl.dead,await User.findOne({username: pl.username}).profilePicture])
+        io.emit("onVote",JSON.stringify(re))*/
 
       }else if(game.state=="Nuit" && data.role==="loup" && data.type==="unvote" ){
         const player = game.players.find(pl=>pl.username === data.who)
@@ -310,8 +400,11 @@ io.on("connection", (socket) => {
         console.log(game)
         await player.save();
         await game.save();
-        const re = game.players.map((pl)=>[pl.username,pl.socketid,pl.vote])
+        
+        const re = game.players.map((pl)=>[pl.username,pl.socketid,pl.vote,pl.dead,pl.profilePicture])
         io.emit("onVote",JSON.stringify(re))
+       /* const re = game.players.map(async (pl)=>[pl.username,pl.socketid,pl.vote,pl.dead,await User.findOne({username: pl.username}).profilePicture])
+        io.emit("onVote",JSON.stringify(re))*/
 
       }
     }

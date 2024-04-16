@@ -20,28 +20,37 @@ router.post("/getPlayers", async (req,res)=>{
         const game = await Game.findOne({uuid}).populate("players");
         let tabPlayers = []
         console.log("THI: "+game)
+        /*let promise = new Promise((resolve,reject)=>{
+            game.players.forEach((pl,index,array)=>{
+                User.findOne({username: pl.username}).then((user)=>{
+                    tabPlayers.push([pl.username,pl.socketid,pl.vote,pl.dead,user.profilePicture])
+                    console.log(user)
+                    if(index===array.length-1) resolve();
+                }).catch((err)=>{
+                    console.error(err)
+                })
+        })
+        })
+
+        promise.then(()=>{
+            console.log("TAB: "+tabPlayers)
+            res.status(200).json(JSON.stringify(tabPlayers));
+        })*/
+
         game.players.forEach(pl=>{
-            tabPlayers.push([pl.username,pl.socketid,pl.vote])
+            tabPlayers.push([pl.username,pl.socketid,pl.vote,pl.dead,pl.profilePicture])
         })
 
         console.log("TAB: "+JSON.stringify(tabPlayers))
 
         res.status(200).json(JSON.stringify(tabPlayers));
+        
 
+        /*tabPlayers.push([pl.username,pl.socketid,pl.vote,pl.dead])
+                    console.log(user) */
+        console.log("TAB: "+tabPlayers)
+        console.log("TAB: "+JSON.stringify(tabPlayers))
 
-       /* console.log("TABP",game.players);
-        game.players.forEach(async (pl) =>{
-            console.log("PL: "+pl)
-            const doc = await Player.findById(pl).exec();
-            console.log("NAME: "+doc)
-            tabPlayers.push([doc.username,doc.socketid])
-            console.log("TAB2 "+tabPlayers)
-        })
-        if(tabPlayers.length === game.players.length)
-        {
-            console.log("TAB: "+tabPlayers)
-            
-        }*/
         
     }catch(error)
     {
@@ -59,7 +68,8 @@ router.post("/createGame", async (req,res)=>{
             {
               socketid:socket,
               user:user._id,
-              username:user.username
+              username:user.username,
+              profilePicture: user.profilePicture
             }
           )
           await newPlayer.save();
