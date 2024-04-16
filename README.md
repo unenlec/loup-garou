@@ -128,5 +128,28 @@
     Soyez fier de ce poste, accrochez la carte au revers de votre vêtement.
     La Sorcière : ce personnage devient plus puissant en fin de partie, ne gaspillez pas vos potions mais ne tardez pas trop à les utiliser.
 
+## Installation
 
+`git clone https://github.com/unenlec/loup-garou.git`
 
+### Etape 1
+
+`cd loup-garou/server`  
+
+puis à la racine il faut créer un fichier ".env" par exemple :  
+
+`MONGO=mongodb://localhost:27017/dbname
+JWT_SECRET=secret`  
+
+ensuite  
+
+`npm i`
+
+`node server.js`
+
+### Etape 2
+`cd loup-garou/client`
+
+`npm i`
+
+`npm run dev`
